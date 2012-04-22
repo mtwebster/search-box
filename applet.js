@@ -59,7 +59,7 @@ MyApplet.prototype = {
             this.searchActive = false;
             this.searchEntryText = this.searchEntry.clutter_text;
             this.searchEntryText.connect('text-changed', Lang.bind(this, this._onSearchTextChanged));
-       //     this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
+            this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
             this._previousSearchPattern = "";
     
 
@@ -69,8 +69,22 @@ MyApplet.prototype = {
         }
     },
     
+    
+     _onMenuKeyPress: function(actor, event) {
+
+        let symbol = event.get_key_symbol();
+        
+        if (symbol==Clutter.KEY_Return && this.menu.isOpen) {
+            this._search();
+            return true;
+        }
+    },
+    
+    
+    
     _search: function() {
-        Main.Util.spawnCommandLine("sensible-browser http://google.com/search?q=" + this.searchEntry.get_text());
+        Main.Util.spawnCommandLine("sensible-browser http://google.com/search?q='" + this.searchEntry.get_text() + "'");
+        this.menu.close();
     },
     
     resetSearch: function(){
