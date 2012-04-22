@@ -25,6 +25,9 @@ MyApplet.prototype = {
         
         try {                 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
+            this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
+                                               icon_name: 'edit-find',
+                                               icon_type: St.IconType.SYMBOLIC });
             
             this._orientation = orientation;
             
@@ -35,46 +38,25 @@ MyApplet.prototype = {
 
             // Fill up the first column
 
-            let vbox = new St.BoxLayout({vertical: true});
-            this._calendarArea.add(vbox);
+            this.searchBox = new St.BoxLayout({ style_class: 'menu-search-box' });
+            this._calendarArea.add(this.searchBox);
+       
+            this.searchEntry = new St.Entry({ name: 'menu-search-entry',
+                                     hint_text: _("Type to search..."),
+                                     track_hover: true,
+                                     can_focus: true });
+            this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
+            this.searchBox.add_actor(this.searchEntry);
+            this.searchActive = false;
+            this.searchEntryText = this.searchEntry.clutter_text;
+       //     this.searchEntryText.connect('text-changed', Lang.bind(this, this._onSearchTextChanged));
+       //     this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
+      //      this._previousSearchPattern = "";
 
-            // Date
-            this._date = new St.Label();
-            this._date.style_class = 'menu-search-box';
+
+   
             this.set_applet_label("Search");
-            vbox.add(this._date);
-           
-            this._eventSource = null;
-            this._eventList = null;
-
-            // Calendar
-            this._calendar = new Calendar.Calendar(this._eventSource);       
-            vbox.add(this._calendar.actor);
-
-            let item = new PopupMenu.PopupMenuItem(_("Date and Time Settings"))
-            item.connect("activate", Lang.bind(this, this._onLaunchSettings));
-            //this.menu.addMenuItem(item);
-            if (item) {
-                let separator = new PopupMenu.PopupSeparatorMenuItem();
-                separator.setColumnWidths(1);
-                vbox.add(separator.actor, {y_align: St.Align.END, expand: true, y_fill: false});
-
-                item.actor.can_focus = false;
-                item.actor.reparent(vbox);
-            }
-
-            // Done with hbox for calendar and event list
-
-            // Track changes to clock settings        
-            this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
-            this._calendarSettings.connect('changed', Lang.bind(this, this._updateClockAndDate));
-
-            // https://bugzilla.gnome.org/show_bug.cgi?id=655129
-            this._upClient = new UPowerGlib.Client();
-            this._upClient.connect('notify-resume', Lang.bind(this, this._updateClockAndDate));
-
-            // Start the clock
-            this._updateClockAndDate();
+      
      
         }
         catch (e) {
