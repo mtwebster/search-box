@@ -8,8 +8,8 @@ const Util = imports.misc.util;
 const PopupMenu = imports.ui.popupMenu;
 const Calendar = imports.ui.calendar;
 const UPowerGlib = imports.gi.UPowerGlib;
-
-
+const PanelMenu = imports.ui.panelMenu;
+const Main = imports.ui.main;
 
 
 
@@ -28,19 +28,28 @@ MyApplet.prototype = {
             this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
                                                icon_name: 'edit-find',
                                                icon_type: St.IconType.SYMBOLIC });
-            
+            this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
+                                             icon_name: 'edit-clear',
+                                             icon_type: St.IconType.SYMBOLIC });
+            this.searchIcon = new St.Icon({icon_name: "edit-find", icon_size: 24, icon_type: St.IconType.FULLCOLOR});
+            this._searchIconClickedId = 0;
+            this.set_applet_label("Internet Search");
             this._orientation = orientation;
             
             this._initContextMenu();
                                      
-            this._calendarArea = new St.BoxLayout({name: 'calendarArea' });
-            this.menu.addActor(this._calendarArea);
-
-            // Fill up the first column
+            this._searchArea = new St.BoxLayout({name: 'searchArea' });
+            this.menu.addActor(this._searchArea);
 
             this.searchBox = new St.BoxLayout({ style_class: 'menu-search-box' });
-            this._calendarArea.add(this.searchBox);
-       
+            this._searchArea.add(this.searchBox);
+
+            this.buttonbox = new St.BoxLayout();
+            button = new St.Button({ child: this.searchIcon });
+            button.connect('clicked', Lang.bind(this, this._search));
+            this.buttonbox.add_actor(button);
+            this._searchArea.add(this.buttonbox);            
+            
             this.searchEntry = new St.Entry({ name: 'menu-search-entry',
                                      hint_text: _("Type to search..."),
                                      track_hover: true,
@@ -49,20 +58,60 @@ MyApplet.prototype = {
             this.searchBox.add_actor(this.searchEntry);
             this.searchActive = false;
             this.searchEntryText = this.searchEntry.clutter_text;
-       //     this.searchEntryText.connect('text-changed', Lang.bind(this, this._onSearchTextChanged));
+            this.searchEntryText.connect('text-changed', Lang.bind(this, this._onSearchTextChanged));
        //     this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
-      //      this._previousSearchPattern = "";
+            this._previousSearchPattern = "";
+    
 
-
-   
-            this.set_applet_label("Search");
-      
-     
         }
         catch (e) {
             global.logError(e);
         }
     },
+    
+    _search: function() {
+        Main.Util.spawnCommandLine("sensible-browser http://google.com/search?q=" + this.searchEntry.get_text());
+    },
+    
+    resetSearch: function(){
+        this.searchEntry.set_text("");
+        this.searchActive = false;
+        global.stage.set_key_focus(this.searchEntry);
+    },
+    
+    _onSearchTextChanged: function (se, prop) {
+        this.searchActive = this.searchEntry.get_text() != '';
+        if (this.searchActive) {
+            this.searchEntry.set_secondary_icon(this._searchActiveIcon);
+
+            if (this._searchIconClickedId == 0) {
+                this._searchIconClickedId = this.searchEntry.connect('secondary-icon-clicked',
+                    Lang.bind(this, function() {
+                        this.resetSearch();       
+                    }));
+            }
+            
+        } else {
+            if (this._searchIconClickedId > 0)
+                this.searchEntry.disconnect(this._searchIconClickedId);
+            this._searchIconClickedId = 0;
+
+            this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
+
+        }
+        if (!this.searchActive) {
+            if (this._searchTimeoutId > 0) {
+                Mainloop.source_remove(this._searchTimeoutId);
+                this._searchTimeoutId = 0;
+            }
+            return;
+        }
+        if (this._searchTimeoutId > 0)
+            return;
+        this._searchTimeoutId = Mainloop.timeout_add(150, Lang.bind(this, this._doSearch));
+    },
+    
+    
     
     on_applet_clicked: function(event) {
         this.menu.toggle();
