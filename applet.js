@@ -12,7 +12,13 @@ const PanelMenu = imports.ui.panelMenu;
 const Main = imports.ui.main;
 const Gtk = imports.gi.Gtk;
 const GLib = imports.gi.GLib;
+const Cinnamon = imports.gi.Cinnamon;
 
+const PROVIDER_FILE = GLib.build_filenamev([global.userdatadir, 'applets/search-box@mtwebster/providers.conf']);
+
+// fallbacks
+let prov_label = 'Google';
+let prov_url = 'http://google.com/search?q=';
 
 function MyApplet(orientation) {
     this._init(orientation);
@@ -35,7 +41,8 @@ MyApplet.prototype = {
             this.searchIcon = new St.Icon({icon_name: "edit-find", icon_size: 24, icon_type: St.IconType.FULLCOLOR});
             this.googleIcon = new St.Icon({icon_name: "google", icon_size: 24});
             this._searchIconClickedId = 0;
-            this.set_applet_label("Internet Search");
+            this._grab_providers();
+            this.set_applet_label(prov_label);
             this._orientation = orientation;
             
             this._initContextMenu();
@@ -65,7 +72,7 @@ MyApplet.prototype = {
             this.searchEntryText.connect('text-changed', Lang.bind(this, this._onSearchTextChanged));
             this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
             this._previousSearchPattern = "";
-            this.edit_menu_item = new Applet.MenuItem(_("Edit search providers"), Gtk.STOCK_EDIT, Lang.bind(this, this._edit_providers));
+            this.edit_menu_item = new Applet.MenuItem(_("Edit search providers (reload Cinnamon after)"), Gtk.STOCK_EDIT, Lang.bind(this, this._edit_providers));
             this._applet_context_menu.addMenuItem(this.edit_menu_item);
 
         }
@@ -75,12 +82,7 @@ MyApplet.prototype = {
     },
     
     _edit_providers: function() {
-    
-        let filePath = GLib.build_filenamev([global.userdatadir, 'applets/search-box@mtwebster/providers.conf']);
-        providerFile = Gio.file_new_for_path(filePath);
-    
-    
-        Main.Util.spawnCommandLine("gedit " + filePath);
+        Main.Util.spawnCommandLine("gedit " + PROVIDER_FILE);
     },
     
     
@@ -98,7 +100,7 @@ MyApplet.prototype = {
     
     
     _search: function() {
-        Main.Util.spawnCommandLine("sensible-browser http://google.com/search?q='" + this.searchEntry.get_text() + "'");
+        Main.Util.spawnCommandLine("sensible-browser " + prov_url + "'" + this.searchEntry.get_text() + "'");
         this.menu.close();
     },
     
@@ -201,7 +203,29 @@ MyApplet.prototype = {
     on_orientation_changed: function (orientation) {
         this._orientation = orientation;
         this._initContextMenu();
-    }
+    },
+    
+    
+    _grab_providers: function () {
+
+        let providerContent = Cinnamon.get_file_contents_utf8_sync(PROVIDER_FILE);
+
+        let lines = providerContent.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            if (line.substring(0,1) == '#')
+                continue;
+            if (line.trim(' ') == '')
+                continue;
+            let components = line.split(',');
+            prov_label = components[0].trim(' ');
+            prov_url = components[1].trim(' ');
+        }
+        
+    },
+
+
+    
     
 };
 
