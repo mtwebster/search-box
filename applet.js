@@ -10,7 +10,8 @@ const Calendar = imports.ui.calendar;
 const UPowerGlib = imports.gi.UPowerGlib;
 const PanelMenu = imports.ui.panelMenu;
 const Main = imports.ui.main;
-
+const Gtk = imports.gi.Gtk;
+const GLib = imports.gi.GLib;
 
 
 function MyApplet(orientation) {
@@ -64,13 +65,24 @@ MyApplet.prototype = {
             this.searchEntryText.connect('text-changed', Lang.bind(this, this._onSearchTextChanged));
             this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
             this._previousSearchPattern = "";
-    
+            this.edit_menu_item = new Applet.MenuItem(_("Edit search providers"), Gtk.STOCK_EDIT, Lang.bind(this, this._edit_providers));
+            this._applet_context_menu.addMenuItem(this.edit_menu_item);
 
         }
         catch (e) {
             global.logError(e);
         }
     },
+    
+    _edit_providers: function() {
+    
+        let filePath = GLib.build_filenamev([global.userdatadir, 'applets/search-box@mtwebster/providers.conf']);
+        providerFile = Gio.file_new_for_path(filePath);
+    
+    
+        Main.Util.spawnCommandLine("gedit " + filePath);
+    },
+    
     
     
      _onMenuKeyPress: function(actor, event) {
