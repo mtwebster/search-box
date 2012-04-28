@@ -74,7 +74,8 @@ MyApplet.prototype = {
             this.searchEntryText.connect('text-changed', Lang.bind(this, this._onSearchTextChanged));
             this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
             this._previousSearchPattern = "";
-            this.edit_menu_item = new Applet.MenuItem(_("Edit search providers (reload Cinnamon after)"), Gtk.STOCK_EDIT, Lang.bind(this, this._edit_providers));
+            this.edit_menu_item = new Applet.MenuItem(_("Edit search providers (reload Cinnamon after)"), Gtk.STOCK_EDIT, 
+                    Lang.bind(this, this._edit_providers));
             this._applet_context_menu.addMenuItem(this.edit_menu_item);
 
         }
@@ -148,25 +149,10 @@ MyApplet.prototype = {
     
     on_applet_clicked: function(event) {
         this.menu.toggle();
+        global.stage.set_key_focus(this.searchEntry);
     },
     
-    _onLaunchSettings: function() {
-        this.menu.close();
-        Util.spawnCommandLine("cinnamon-settings calendar");
-    },
 
-    _updateClockAndDate: function() {
-        let dateFormat = this._calendarSettings.get_string('date-format');       
-        let dateFormatFull = this._calendarSettings.get_string('date-format-full'); 
-        let displayDate = new Date();
-   //     this.set_applet_label(displayDate.toLocaleFormat(dateFormat));
-   //     this._date.set_text(displayDate.toLocaleFormat(dateFormatFull));
-
-        Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateClockAndDate));
-        return false;
-    },
-    
-    
     on_orientation_changed: function (orientation) {
         this._orientation = orientation;
         this._initContextMenu();
