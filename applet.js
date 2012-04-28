@@ -32,6 +32,7 @@ MyApplet.prototype = {
                                              icon_name: 'edit-clear',
                                              icon_type: St.IconType.SYMBOLIC });
             this.searchIcon = new St.Icon({icon_name: "edit-find", icon_size: 24, icon_type: St.IconType.FULLCOLOR});
+            this.googleIcon = new St.Icon({icon_name: "google", icon_size: 24});
             this._searchIconClickedId = 0;
             this.set_applet_label("Internet Search");
             this._orientation = orientation;
@@ -39,9 +40,11 @@ MyApplet.prototype = {
             this._initContextMenu();
                                      
             this._searchArea = new St.BoxLayout({name: 'searchArea' });
+      
             this.menu.addActor(this._searchArea);
 
             this.searchBox = new St.BoxLayout({ style_class: 'menu-search-box' });
+            this._searchArea.add(this.googleIcon);
             this._searchArea.add(this.searchBox);
 
             this.buttonbox = new St.BoxLayout();
