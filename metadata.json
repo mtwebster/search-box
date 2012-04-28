@@ -1,6 +1,6 @@
 {
 "uuid": "search-box@mtwebster",
-"name": "Google Search Box",
-"description": "Perform a Google search, launching your default browser in a new window",
-"icon": "google"
+"name": "Internet Search Box",
+"description": "Perform an Internet search, using your favorite engine",
+"icon": "web-browser",
 }

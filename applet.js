@@ -25,10 +25,10 @@ function MyApplet(orientation) {
 }
 
 MyApplet.prototype = {
-    __proto__: Applet.TextApplet.prototype,
+    __proto__: Applet.TextIconApplet.prototype,
 
     _init: function(orientation) {        
-        Applet.TextApplet.prototype._init.call(this, orientation);
+        Applet.TextIconApplet.prototype._init.call(this, orientation);
         
         try {                 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
@@ -43,16 +43,18 @@ MyApplet.prototype = {
             this._searchIconClickedId = 0;
             this._grab_providers();
             this.set_applet_label(prov_label);
+            this.set_applet_icon_name("web-browser");
             this._orientation = orientation;
+            this.menu = new Applet.AppletPopupMenu(this, this._orientation);
+            this.menuManager.addMenu(this.menu);
+        
             
-            this._initContextMenu();
                                      
             this._searchArea = new St.BoxLayout({name: 'searchArea' });
       
             this.menu.addActor(this._searchArea);
 
             this.searchBox = new St.BoxLayout({ style_class: 'menu-search-box' });
-            this._searchArea.add(this.googleIcon);
             this._searchArea.add(this.searchBox);
 
             this.buttonbox = new St.BoxLayout();
@@ -164,41 +166,6 @@ MyApplet.prototype = {
         return false;
     },
     
-    _initContextMenu: function () {
-        if (this._calendarArea) this._calendarArea.unparent();
-        if (this.menu) this.menuManager.removeMenu(this.menu);
-        
-        this.menu = new Applet.AppletPopupMenu(this, this._orientation);
-        this.menuManager.addMenu(this.menu);
-        
-        if (this._calendarArea){
-            this.menu.addActor(this._calendarArea);
-            this._calendarArea.show_all();
-        }
-        
-        // Whenever the menu is opened, select today
-        this.menu.connect('open-state-changed', Lang.bind(this, function(menu, isOpen) {
-            if (isOpen) {
-                let now = new Date();
-                /* Passing true to setDate() forces events to be reloaded. We
-                 * want this behavior, because
-                 *
-                 *   o It will cause activation of the calendar server which is
-                 *     useful if it has crashed
-                 *
-                 *   o It will cause the calendar server to reload events which
-                 *     is useful if dynamic updates are not supported or not
-                 *     properly working
-                 *
-                 * Since this only happens when the menu is opened, the cost
-                 * isn't very big.
-                 */
-                this._calendar.setDate(now, true);
-                // No need to update this._eventList as ::selected-date-changed
-                // signal will fire
-            }
-        }));
-    },
     
     on_orientation_changed: function (orientation) {
         this._orientation = orientation;
