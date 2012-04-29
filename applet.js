@@ -19,6 +19,7 @@ const PROVIDER_FILE = GLib.build_filenamev([global.userdatadir, 'applets/search-
 // fallbacks
 let prov_label = 'Google';
 let prov_url = 'http://google.com/search?q=';
+let show_provider = 1;
 
 function MyApplet(orientation) {
     this._init(orientation);
@@ -39,11 +40,14 @@ MyApplet.prototype = {
                                              icon_name: 'edit-clear',
                                              icon_type: St.IconType.SYMBOLIC });
             this.searchIcon = new St.Icon({icon_name: "edit-find", icon_size: 24, icon_type: St.IconType.FULLCOLOR});
-            this.googleIcon = new St.Icon({icon_name: "google", icon_size: 24});
             this._searchIconClickedId = 0;
             this._grab_providers();
-            this.set_applet_label(prov_label);
-            this.set_applet_icon_name("web-browser");
+            if (show_provider ==1) {
+                this.set_applet_label(prov_label);
+            } else {
+                this.set_applet_label('');
+            }
+            this.set_applet_icon_symbolic_name("edit-find-symbolic");
             this._orientation = orientation;
             this.menu = new Applet.AppletPopupMenu(this, this._orientation);
             this.menuManager.addMenu(this.menu);
@@ -171,6 +175,14 @@ MyApplet.prototype = {
             if (line.trim(' ') == '')
                 continue;
             let components = line.split(',');
+            if (components[0].trim(' ') == 'SHOW_PROVIDER') {
+                if (components[1].trim(' ') == 'true') {
+                    show_provider = 1;
+                } else {
+                    show_provider = 0;
+                }
+                continue;
+            }
             prov_label = components[0].trim(' ');
             prov_url = components[1].trim(' ');
         }
