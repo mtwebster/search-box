@@ -89,7 +89,7 @@ MyApplet.prototype = {
     },
     
     _edit_providers: function() {
-        Main.Util.spawnCommandLine("gedit " + PROVIDER_FILE);
+        Main.Util.spawnCommandLine("xdg-open " + PROVIDER_FILE);
     },
     
     
