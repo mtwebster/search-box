@@ -107,7 +107,7 @@ MyApplet.prototype = {
     
     
     _search: function() {
-        Main.Util.spawnCommandLine("sensible-browser " + prov_url + "'" + this.searchEntry.get_text() + "'");
+        Main.Util.spawnCommandLine("xdg-open " + prov_url + "'" + this.searchEntry.get_text() + "'");
         this.menu.close();
     },
     
