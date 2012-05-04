@@ -92,7 +92,7 @@ MyApplet.prototype = {
     },
 
     _edit_providers: function() {
-        Main.Util.spawnCommandLine("xdg-open " + PROVIDER_FILE.get_path());
+        Main.Util.spawnCommandLine("gksudo xdg-open " + PROVIDER_FILE.get_path());
     },
 
     _reload: function() {
