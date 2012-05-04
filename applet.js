@@ -80,9 +80,9 @@ MyApplet.prototype = {
             this.reload_menu_item = new Applet.MenuItem(_("Reload providers.conf file"), 'view-refresh-symbolic',
                     Lang.bind(this, this._reload));
             this._applet_context_menu.addMenuItem(this.reload_menu_item);
-     //       this.defaults_menu_item = new Applet.MenuItem(_("Change default programs..."), 'system-run-symbolic',
-     //               Lang.bind(this, this._defaults));
-     //       this._applet_context_menu.addMenuItem(this.defaults_menu_item);
+            this.defaults_menu_item = new Applet.MenuItem(_("Change default programs..."), 'system-run-symbolic',
+                    Lang.bind(this, this._defaults));
+            this._applet_context_menu.addMenuItem(this.defaults_menu_item);
 
         }
         catch (e) {
@@ -104,7 +104,7 @@ MyApplet.prototype = {
     },
 
     _defaults: function() {
-            Main.Util.spawnCommandLine("mate-default-applications-properties");
+        Util.spawn(['gnome-control-center', 'info']);
     },
 
     _onMenuKeyPress: function(actor, event) {
