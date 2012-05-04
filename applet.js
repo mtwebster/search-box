@@ -13,8 +13,9 @@ const Main = imports.ui.main;
 const Gtk = imports.gi.Gtk;
 const GLib = imports.gi.GLib;
 const Cinnamon = imports.gi.Cinnamon;
+const APPLET_DIR = imports.ui.appletManager._find_applet('search-box@mtwebster');
 
-const PROVIDER_FILE = GLib.build_filenamev([global.userdatadir, 'applets/search-box@mtwebster/providers.conf']);
+PROVIDER_FILE = APPLET_DIR.get_child('providers.conf');
 
 // fallbacks
 let prov_label = 'Google';
@@ -91,7 +92,7 @@ MyApplet.prototype = {
     },
 
     _edit_providers: function() {
-        Main.Util.spawnCommandLine("xdg-open " + PROVIDER_FILE);
+        Main.Util.spawnCommandLine("xdg-open " + PROVIDER_FILE.get_path());
     },
 
     _reload: function() {
@@ -169,8 +170,7 @@ MyApplet.prototype = {
 
     _grab_providers: function () {
 
-        let providerContent = Cinnamon.get_file_contents_utf8_sync(PROVIDER_FILE);
-
+        let providerContent = Cinnamon.get_file_contents_utf8_sync(PROVIDER_FILE.get_path());
         let lines = providerContent.split('\n');
         for (let i = 0; i < lines.length; i++) {
             let line = lines[i];
