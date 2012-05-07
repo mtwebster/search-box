@@ -3,6 +3,7 @@ const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
+const Signals = imports.signals;
 
 const SETTINGS_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
@@ -10,10 +11,7 @@ function AppletSettings(uuid, dist_filename, filename) {
     this._init(uuid, dist_filename, filename);
 };
 
-
 AppletSettings.prototype = {
-        
-        
         _init: function (uuid, dist_filename, filename) {
             this.uuid = uuid;
             this.dist_filename = dist_filename;
@@ -21,6 +19,7 @@ AppletSettings.prototype = {
             this.filename = filename;
             this.settings = new Array();
             this.parsed_settings = new Array();
+            this.emit('settings-file-changed');
             try {
                 this.dist_filename = this.applet_dir.get_child(this.dist_filename);
                 this.settings_dir = Gio.file_new_for_path(SETTINGS_FOLDER + this.uuid);
@@ -33,12 +32,22 @@ AppletSettings.prototype = {
                     fp.write(dist_settings, null);
                     fp.close(null);
                 }
-       //         this.settings_file.connect('changed', Lang.bind(this, this._on_settings_file_changed));
+                let f = this.settings_file;
+                this.settings_file_monitor = f.monitor_file(Gio.FileMonitorFlags.NONE, null);
+                this.settings_file_monitor.connect('changed', function () {
+                    try {
+                    global.logError('asfdsdf');
+                    this.emit('settings-file-changed');
+                    } catch (e) {
+                        global.logError(e);
+                    }
+                });
                 this._read_settings();
             } catch (e) {
                 global.logError(e);
             }
         },
+        
 
         _read_settings: function () {
             this.settings = Cinnamon.get_file_contents_utf8_sync(this.settings_file.get_path());
@@ -55,9 +64,8 @@ AppletSettings.prototype = {
                 let component_line_pretrim = line.split(',');
                 let component_line = new Array();
                 // Trim any extra space out of each line's members
-                // @TODO: how do we handle strings with intentional spaces?
                 for (let j = 0; j < component_line_pretrim.length; j++) {
-                    component_line[j] = component_line_pretrim[j].trim(' ');
+                    component_line[j] = component_line_pretrim[j].replace(/^\s+|\s+$/g, "");
                 }
                 // Finally, store the settings line in the final array to be used
                 // for any further work in this class
@@ -67,10 +75,6 @@ AppletSettings.prototype = {
 
         editSettingsFile: function () {
             Main.Util.spawnCommandLine("xdg-open " + this.settings_file.get_path());
-        },
-
-        _on_settings_file_changed: function () {
-            this._read_settings();
         },
         
         getArray: function (key, def) {
@@ -107,7 +111,8 @@ AppletSettings.prototype = {
             }
             return (res == 'true') ? true : false;
         }
-}
+};
+Signals.addSignalMethods(AppletSettings.prototype);
 
 /*
 function initialize_setting_file(uuid, dist_filename, filename) {

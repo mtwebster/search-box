@@ -91,6 +91,7 @@ MyApplet.prototype = {
             this.defaults_menu_item = new Applet.MenuItem(_("Change default programs..."), 'system-run-symbolic',
                     Lang.bind(this, this._defaults));
             this._applet_context_menu.addMenuItem(this.defaults_menu_item);
+            this.settings.connect('settings-file-changed', Lang.bind(this, this._reload));
         }
         catch (e) {
             global.logError(e);
@@ -102,6 +103,7 @@ MyApplet.prototype = {
     },
 
     _reload: function() {
+        global.logError('reload');
         this.settings._read_settings();
         show_provider = this.settings.getBoolean('SHOW_PROVIDER', DEFAULT_SHOW);
         let ar = this.settings.getArray('PROVIDER', DEFAULT_ARRAY);
@@ -175,7 +177,7 @@ MyApplet.prototype = {
     on_orientation_changed: function (orientation) {
         this._orientation = orientation;
         this._initContextMenu();
-    },
+    }
 
 };
 
