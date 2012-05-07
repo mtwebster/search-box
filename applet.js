@@ -13,14 +13,19 @@ const Main = imports.ui.main;
 const Gtk = imports.gi.Gtk;
 const GLib = imports.gi.GLib;
 const Cinnamon = imports.gi.Cinnamon;
+
+const AppletDir = imports.ui.appletManager.applets['search-box@mtwebster'];
+const AppletSettings = AppletDir.appletSettings;
+
+
 const APPLET_DIR = imports.ui.appletManager._find_applet('search-box@mtwebster');
 
 PROVIDER_FILE = APPLET_DIR.get_child('providers.conf');
 
 // fallbacks
-let prov_label = 'Google';
-let prov_url = 'http://google.com/search?q=';
-let show_provider = 1;
+prov_label = 'Google';
+prov_url = 'http://google.com/search?q=';
+show_provider = true;
 
 function MyApplet(orientation) {
     this._init(orientation);
@@ -32,6 +37,7 @@ MyApplet.prototype = {
     _init: function(orientation) {
         Applet.TextIconApplet.prototype._init.call(this, orientation);
         try {
+            this.settings = new AppletSettings.AppletSettings('search-box@mtwebster', 'providers.conf', 'providers.conf');
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
                                                icon_name: 'edit-find',
@@ -41,9 +47,10 @@ MyApplet.prototype = {
                                              icon_type: St.IconType.SYMBOLIC });
             this.searchIcon = new St.Icon({icon_name: "edit-find", icon_size: 24, icon_type: St.IconType.FULLCOLOR});
             this._searchIconClickedId = 0;
-            this._grab_providers();
-            if (show_provider ==1) {
-                this.set_applet_label(prov_label);
+  //          this._grab_providers();
+            show_provider = this.settings.getSettingBoolean('SHOW_PROVIDER');
+            if (show_provider) {
+                this.set_applet_label(this.settings.getSetting('PROVIDER'));
             } else {
                 this.set_applet_label('');
             }
@@ -96,9 +103,10 @@ MyApplet.prototype = {
     },
 
     _reload: function() {
-        this._grab_providers();
-        if (show_provider ==1) {
-            this.set_applet_label(prov_label);
+  //      this._grab_providers();
+        show_provider = this.settings.getSettingBoolean('SHOW_PROVIDER');
+        if (show_provider) {
+            this.set_applet_label(this.settings.getSetting('PROVIDER'));
         } else {
             this.set_applet_label('');
         }
