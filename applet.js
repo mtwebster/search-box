@@ -13,14 +13,11 @@ const Main = imports.ui.main;
 const Gtk = imports.gi.Gtk;
 const GLib = imports.gi.GLib;
 const Cinnamon = imports.gi.Cinnamon;
-
 const AppletDir = imports.ui.appletManager.applets['search-box@mtwebster'];
 const AppletSettings = AppletDir.appletSettings;
 
-
 const APPLET_DIR = imports.ui.appletManager._find_applet('search-box@mtwebster');
 
-// fallbacks
 prov_label = '';
 prov_url = '';
 const DEFAULT_SHOW = true;
@@ -85,9 +82,6 @@ MyApplet.prototype = {
             this.edit_menu_item = new Applet.MenuItem(_("Edit providers.conf file"), 'accessories-text-editor-symbolic',
                     Lang.bind(this, this._edit_providers));
             this._applet_context_menu.addMenuItem(this.edit_menu_item);
-            this.reload_menu_item = new Applet.MenuItem(_("Reload providers.conf file"), 'view-refresh-symbolic',
-                    Lang.bind(this, this._reload));
-            this._applet_context_menu.addMenuItem(this.reload_menu_item);
             this.defaults_menu_item = new Applet.MenuItem(_("Change default programs..."), 'system-run-symbolic',
                     Lang.bind(this, this._defaults));
             this._applet_context_menu.addMenuItem(this.defaults_menu_item);
@@ -103,7 +97,6 @@ MyApplet.prototype = {
     },
 
     _reload: function() {
-        global.logError('reload');
         this.settings._read_settings();
         show_provider = this.settings.getBoolean('SHOW_PROVIDER', DEFAULT_SHOW);
         let ar = this.settings.getArray('PROVIDER', DEFAULT_ARRAY);

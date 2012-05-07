@@ -9,7 +9,7 @@ const SETTINGS_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 function AppletSettings(uuid, dist_filename, filename) {
     this._init(uuid, dist_filename, filename);
-};
+}
 
 AppletSettings.prototype = {
         _init: function (uuid, dist_filename, filename) {
@@ -33,13 +33,7 @@ AppletSettings.prototype = {
                 }
                 let f = this.settings_file;
                 this.settings_file_monitor = f.monitor_file(Gio.FileMonitorFlags.NONE, null);
-                this.settings_file_monitor.connect('changed', function () {
-                    try {
-                        this.emit('settings-file-changed');
-                    } catch (e) {
-                        global.logError(e);
-                    }
-                });
+                this.settings_file_monitor.connect('changed', Lang.bind(this, this._on_settings_file_changed));
                 this._read_settings();
             } catch (e) {
                 global.logError(e);
@@ -70,6 +64,10 @@ AppletSettings.prototype = {
             }
         },
 
+        _on_settings_file_changed: function () {
+            this.emit("settings-file-changed");
+        },
+        
         editSettingsFile: function () {
             Main.Util.spawnCommandLine("xdg-open " + this.settings_file.get_path());
         },
