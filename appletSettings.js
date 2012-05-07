@@ -41,6 +41,7 @@ AppletSettings.prototype = {
         },
 
         _read_settings: function () {
+            this.parsed_settings = [];
             this.settings = Cinnamon.get_file_contents_utf8_sync(this.settings_file.get_path());
             // First, split the lines up
             let lines = this.settings.split('\n');
@@ -85,7 +86,6 @@ AppletSettings.prototype = {
             if (res) {
                 return res;
             } else {
-                global.logError('didnt find settings array');
                 return def;
             }
         },
