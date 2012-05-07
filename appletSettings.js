@@ -19,7 +19,6 @@ AppletSettings.prototype = {
             this.filename = filename;
             this.settings = new Array();
             this.parsed_settings = new Array();
-            this.emit('settings-file-changed');
             try {
                 this.dist_filename = this.applet_dir.get_child(this.dist_filename);
                 this.settings_dir = Gio.file_new_for_path(SETTINGS_FOLDER + this.uuid);
@@ -36,8 +35,7 @@ AppletSettings.prototype = {
                 this.settings_file_monitor = f.monitor_file(Gio.FileMonitorFlags.NONE, null);
                 this.settings_file_monitor.connect('changed', function () {
                     try {
-                    global.logError('asfdsdf');
-                    this.emit('settings-file-changed');
+                        this.emit('settings-file-changed');
                     } catch (e) {
                         global.logError(e);
                     }
@@ -47,7 +45,6 @@ AppletSettings.prototype = {
                 global.logError(e);
             }
         },
-        
 
         _read_settings: function () {
             this.settings = Cinnamon.get_file_contents_utf8_sync(this.settings_file.get_path());
