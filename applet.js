@@ -20,12 +20,11 @@ const AppletSettings = AppletDir.appletSettings;
 
 const APPLET_DIR = imports.ui.appletManager._find_applet('search-box@mtwebster');
 
-PROVIDER_FILE = APPLET_DIR.get_child('providers.conf');
-
 // fallbacks
-prov_label = 'Google';
-prov_url = 'http://google.com/search?q=';
-show_provider = true;
+prov_label = '';
+prov_url = '';
+const DEFAULT_SHOW = true;
+const DEFAULT_ARRAY = ['PROVIDER', 'Google', 'http://google.com/search?q='];
 
 function MyApplet(orientation) {
     this._init(orientation);
@@ -47,13 +46,14 @@ MyApplet.prototype = {
                                              icon_type: St.IconType.SYMBOLIC });
             this.searchIcon = new St.Icon({icon_name: "edit-find", icon_size: 24, icon_type: St.IconType.FULLCOLOR});
             this._searchIconClickedId = 0;
-  //          this._grab_providers();
-            show_provider = this.settings.getSettingBoolean('SHOW_PROVIDER');
+            let ar = this.settings.getArray('PROVIDER', DEFAULT_ARRAY);
+            show_provider = this.settings.getBoolean('SHOW_PROVIDER', DEFAULT_SHOW);
             if (show_provider) {
-                this.set_applet_label(this.settings.getSetting('PROVIDER'));
+                this.set_applet_label(ar[1]);
             } else {
                 this.set_applet_label('');
             }
+            prov_url = ar[2];
             this.set_applet_icon_symbolic_name("edit-find-symbolic");
             this._orientation = orientation;
             this.menu = new Applet.AppletPopupMenu(this, this._orientation);
@@ -91,7 +91,6 @@ MyApplet.prototype = {
             this.defaults_menu_item = new Applet.MenuItem(_("Change default programs..."), 'system-run-symbolic',
                     Lang.bind(this, this._defaults));
             this._applet_context_menu.addMenuItem(this.defaults_menu_item);
-
         }
         catch (e) {
             global.logError(e);
@@ -99,17 +98,19 @@ MyApplet.prototype = {
     },
 
     _edit_providers: function() {
-        Main.Util.spawnCommandLine("gksudo xdg-open " + PROVIDER_FILE.get_path());
+        this.settings.editSettingsFile();
     },
 
     _reload: function() {
-  //      this._grab_providers();
-        show_provider = this.settings.getSettingBoolean('SHOW_PROVIDER');
+        this.settings._read_settings();
+        show_provider = this.settings.getBoolean('SHOW_PROVIDER', DEFAULT_SHOW);
+        let ar = this.settings.getArray('PROVIDER', DEFAULT_ARRAY);
         if (show_provider) {
-            this.set_applet_label(this.settings.getSetting('PROVIDER'));
+            this.set_applet_label(ar[1]);
         } else {
             this.set_applet_label('');
         }
+        prov_url = ar[2];
     },
 
     _defaults: function() {
@@ -175,31 +176,6 @@ MyApplet.prototype = {
         this._orientation = orientation;
         this._initContextMenu();
     },
-
-    _grab_providers: function () {
-
-        let providerContent = Cinnamon.get_file_contents_utf8_sync(PROVIDER_FILE.get_path());
-        let lines = providerContent.split('\n');
-        for (let i = 0; i < lines.length; i++) {
-            let line = lines[i];
-            if (line.substring(0,1) == '#')
-                continue;
-            if (line.trim(' ') == '')
-                continue;
-            let components = line.split(',');
-            if (components[0].trim(' ') == 'SHOW_PROVIDER') {
-                if (components[1].trim(' ') == 'true') {
-                    show_provider = 1;
-                } else {
-                    show_provider = 0;
-                }
-                continue;
-            }
-            prov_label = components[0].trim(' ');
-            prov_url = components[1].trim(' ');
-        }
-    },
-
 
 };
 

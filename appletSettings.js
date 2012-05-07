@@ -2,7 +2,7 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
-
+const Main = imports.ui.main;
 
 const SETTINGS_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
@@ -15,11 +15,12 @@ AppletSettings.prototype = {
         
         
         _init: function (uuid, dist_filename, filename) {
-            this.parsed_settings = {};
             this.uuid = uuid;
             this.dist_filename = dist_filename;
             this.applet_dir = imports.ui.appletManager._find_applet(this.uuid);
             this.filename = filename;
+            this.settings = new Array();
+            this.parsed_settings = new Array();
             try {
                 this.dist_filename = this.applet_dir.get_child(this.dist_filename);
                 this.settings_dir = Gio.file_new_for_path(SETTINGS_FOLDER + this.uuid);
@@ -32,18 +33,15 @@ AppletSettings.prototype = {
                     fp.write(dist_settings, null);
                     fp.close(null);
                 }
-                this.settings_file.connect('changed', Lang.bind(this, this._on_settings_file_changed));
+       //         this.settings_file.connect('changed', Lang.bind(this, this._on_settings_file_changed));
                 this._read_settings();
             } catch (e) {
                 global.logError(e);
-             //   throw new Error('something went wrong');
             }
         },
 
         _read_settings: function () {
             this.settings = Cinnamon.get_file_contents_utf8_sync(this.settings_file.get_path());
-            
-            if (!this.settings) { global.logError('blah'); }
             // First, split the lines up
             let lines = this.settings.split('\n');
             // then, go thru and trim out any comments and blank lines, and
@@ -54,36 +52,60 @@ AppletSettings.prototype = {
                     continue;
                 if (line.trim(' ') == '')
                     continue;
-                let component_line = line.split(',');
+                let component_line_pretrim = line.split(',');
+                let component_line = new Array();
                 // Trim any extra space out of each line's members
                 // @TODO: how do we handle strings with intentional spaces?
-                for (let j = 0; j < component_line.length; j++) {
-                    component_line[j] = component_line[j].trim(' ');
+                for (let j = 0; j < component_line_pretrim.length; j++) {
+                    component_line[j] = component_line_pretrim[j].trim(' ');
                 }
                 // Finally, store the settings line in the final array to be used
                 // for any further work in this class
-                this.parsed_settings[i] = component_line;
+                this.parsed_settings.push(component_line);
             }
         },
-        
-        
+
+        editSettingsFile: function () {
+            Main.Util.spawnCommandLine("xdg-open " + this.settings_file.get_path());
+        },
+
         _on_settings_file_changed: function () {
             this._read_settings();
         },
         
-        getSetting: function (key) {
-            for (let i = 0; i < this.parsed_settings.length; i++) {
-                if (this.parsed_settings[i][0] != key) {
-                    continue;
-                } else {
-                    return this.parsed_settings[i];
-                }
+        getArray: function (key, def) {
+            if (this.parsed_settings.length == 0) {
+                return def;
             }
-            return null;
+            let res;
+            for (i=0; i < this.parsed_settings.length; i++)
+                if(key == this.parsed_settings[i][0]) {
+                    res = this.parsed_settings[i]; 
+                }
+            
+            if (res) {
+                return res;
+            } else {
+                global.logError('didnt find settings array');
+                return def;
+            }
         },
-        
-        getSettingBoolean: function (key) {
-            return (this.getSetting(key) == 'true') ? true : false;
+
+        getString: function (key, def) {
+            let res = this.getArray(key, ['null', 'null']);
+            if (res[0] == 'null') {
+                return def;
+            } else {
+                return res[1];
+            }
+        },
+
+        getBoolean: function (key, def) {
+            let res = this.getString(key, 'null');
+            if (res == 'null') {
+                return def;
+            }
+            return (res == 'true') ? true : false;
         }
 }
 
