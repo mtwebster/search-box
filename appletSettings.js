@@ -5,6 +5,35 @@ const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
 const Signals = imports.signals;
 
+/*
+ * The AppletSettings class is intended to allow easy access to user settings file(s)
+ *
+ * Generally the settings file will consist of comma-delimited entries, with one
+ * 'record' per line, and the first entry in each line being known as the 'key'
+ *
+ * For instance, if I wanted to allow setting of a search provider, and the url to use for it
+ * I might put:
+ *
+ * PROVIDER, Google, http://google.com/search?q=
+ *
+ * Any blank lines, or lines starting with # will be filtered out
+ *
+ * To initialize,
+ *
+ * settingProvider = new AppletSettings(uuid, dist_filename, filename)
+ * where:
+ * uuid is the uuid of the app (a folder with this name will be created under <userhome>/.cinnamon/
+ * dist_filename is the file name packed with the applet, will be the seed file for the user settings file
+ * filename is the settings file name that will be created in the .cinnamon/<uuid> folder
+ *
+ *
+ * It will emit the signal 'settings-file-changed' if the settings file is modified while the applet is running
+ * You can use this to know when to reload the settings
+ *
+ *
+ */
+
+
 const SETTINGS_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 function AppletSettings(uuid, dist_filename, filename) {
@@ -43,10 +72,8 @@ AppletSettings.prototype = {
         _read_settings: function () {
             this.parsed_settings = [];
             this.settings = Cinnamon.get_file_contents_utf8_sync(this.settings_file.get_path());
-            // First, split the lines up
             let lines = this.settings.split('\n');
-            // then, go thru and trim out any comments and blank lines, and
-            // with what's remaining, create a single-dimension string array of each line
+
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
                 if (line.substring(0,1) == '#')
@@ -55,12 +82,11 @@ AppletSettings.prototype = {
                     continue;
                 let component_line_pretrim = line.split(',');
                 let component_line = new Array();
-                // Trim any extra space out of each line's members
+
                 for (let j = 0; j < component_line_pretrim.length; j++) {
                     component_line[j] = component_line_pretrim[j].replace(/^\s+|\s+$/g, "");
                 }
-                // Finally, store the settings line in the final array to be used
-                // for any further work in this class
+
                 this.parsed_settings.push(component_line);
             }
         },
@@ -72,7 +98,7 @@ AppletSettings.prototype = {
         editSettingsFile: function () {
             Main.Util.spawnCommandLine("xdg-open " + this.settings_file.get_path());
         },
-        
+
         getArray: function (key, def) {
             if (this.parsed_settings.length == 0) {
                 return def;
@@ -82,7 +108,6 @@ AppletSettings.prototype = {
                 if(key == this.parsed_settings[i][0]) {
                     res = this.parsed_settings[i]; 
                 }
-            
             if (res) {
                 return res;
             } else {
@@ -105,52 +130,11 @@ AppletSettings.prototype = {
                 return def;
             }
             return (res == 'true') ? true : false;
+        },
+
+        getRawList: function () {
+            return this.parsed_settings;
         }
 };
 Signals.addSignalMethods(AppletSettings.prototype);
 
-/*
-function initialize_setting_file(uuid, dist_filename, filename) {
-    
-     Check if settings file has been created and create directory structure if not
-     provide uuid of applet, filename of setting seed file, and desired filename of setting file
-     return a 'changed' watcher
-     this is typically run once upon initialization of the applet - if the settings file exists, it
-     creates a watcher and  returns it
-    
-}
-
-function read_setting_file(uuid, filename) {
-    /*
-     * read a settings file - this can be done initially
-     * then triggered upon the file changing, so settings can be updated
-     
-}
-
-
-Settings files will be organized as follows:
-
-3+ fields, comma delimited, one 'entry' per field.  
-
-
-setting-label       ,       data1       ,       data2       ,       etc..
-
-i.e.
-
-provider, http://www.google.com, Google
-
-this js file will provide utility classes for reading a particular setting by requesting a 'setting-label', or key,
-and the package of data that goes with it
-
-
-function getSetting(dataset, key) {
-    // Returns a String array - for now, it's up to the applet to decide how to handle it
-    return String[];
-}
-
-function edit_setting_file(uuid, filename) {
-    /*
-     * Allow the applet to 
-     
-}
-*/
