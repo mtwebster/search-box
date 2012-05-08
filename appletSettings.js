@@ -63,13 +63,23 @@ AppletSettings.prototype = {
                 let f = this.settings_file;
                 this.settings_file_monitor = f.monitor_file(Gio.FileMonitorFlags.NONE, null);
                 this.settings_file_monitor.connect('changed', Lang.bind(this, this._on_settings_file_changed));
-                this._read_settings();
+                this.readSettings();
             } catch (e) {
                 global.logError(e);
             }
         },
 
-        _read_settings: function () {
+        _on_settings_file_changed: function () {
+            this.emit("settings-file-changed");
+        },
+
+        /*
+         * readSettings:  Reloads the setting file from the disk
+         * You generally want to call this any time 'settings-file-changed'
+         * is triggered so you can re-build your applet's state
+         *
+         */
+        readSettings: function () {
             this.parsed_settings = [];
             this.settings = Cinnamon.get_file_contents_utf8_sync(this.settings_file.get_path());
             let lines = this.settings.split('\n');
@@ -91,14 +101,24 @@ AppletSettings.prototype = {
             }
         },
 
-        _on_settings_file_changed: function () {
-            this.emit("settings-file-changed");
-        },
-        
-        editSettingsFile: function () {
-            Main.Util.spawnCommandLine("xdg-open " + this.settings_file.get_path());
+        /*
+         * editSettingsFile: Open the user settings file using the supplied editor
+         * editor: string of editor name to use
+         */
+        editSettingsFile: function (editor) {
+            Main.Util.spawnCommandLine(editor + " " + this.settings_file.get_path());
         },
 
+        /*
+         * getArray:  Returns an array of a single setting 'record'
+         * key: search string (first entry in a record)
+         * def: what you want returned if the search is unsuccessful
+         *
+         * example entry:
+         *
+         * PROVIDER, Google, http://google.com/search?q=
+         *
+         */
         getArray: function (key, def) {
             if (this.parsed_settings.length == 0) {
                 return def;
@@ -115,6 +135,16 @@ AppletSettings.prototype = {
             }
         },
 
+        /*
+         * getString: Returns a string - generally the 2nd entry in a record
+         * key: search string (first entry in a record)
+         * def: what you want returned if the search is unsuccessful
+         *
+         * example entry:
+         *
+         * LABEL, Superman
+         *
+         */
         getString: function (key, def) {
             let res = this.getArray(key, ['null', 'null']);
             if (res[0] == 'null') {
@@ -124,6 +154,16 @@ AppletSettings.prototype = {
             }
         },
 
+        /*
+         * getBoolean: Returns true or false based on the 2nd entry in a record
+         * key: search string (first entry in a record)
+         * def: what you want returned if the search is unsuccessful
+         *
+         * example entry:
+         *
+         * SHOW_PROVIDER, true
+         *
+         */
         getBoolean: function (key, def) {
             let res = this.getString(key, 'null');
             if (res == 'null') {
@@ -132,6 +172,10 @@ AppletSettings.prototype = {
             return (res == 'true') ? true : false;
         },
 
+        /*
+         * getRawList: Returns a multi-dimensional array consisting
+         * of all the records extracted from the settings file
+         */
         getRawList: function () {
             return this.parsed_settings;
         }

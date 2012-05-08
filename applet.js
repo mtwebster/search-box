@@ -22,6 +22,7 @@ prov_label = '';
 prov_url = '';
 const DEFAULT_SHOW = true;
 const DEFAULT_ARRAY = ['PROVIDER', 'Google', 'http://google.com/search?q='];
+const TEXT_EDITOR = 'xdg-open';
 
 function MyApplet(orientation) {
     this._init(orientation);
@@ -93,11 +94,11 @@ MyApplet.prototype = {
     },
 
     _edit_providers: function() {
-        this.settings.editSettingsFile();
+        this.settings.editSettingsFile(TEXT_EDITOR);
     },
 
     _reload: function() {
-        this.settings._read_settings();
+        this.settings.readSettings();
         show_provider = this.settings.getBoolean('SHOW_PROVIDER', DEFAULT_SHOW);
         let ar = this.settings.getArray('PROVIDER', DEFAULT_ARRAY);
         if (show_provider) {
