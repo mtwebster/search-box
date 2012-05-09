@@ -15,6 +15,7 @@ const GLib = imports.gi.GLib;
 const Cinnamon = imports.gi.Cinnamon;
 const AppletDir = imports.ui.appletManager.applets['search-box@mtwebster'];
 const AppletSettings = AppletDir.appletSettings;
+const AppletSettingsUI = AppletDir.appletSettingsUI;
 
 const APPLET_DIR = imports.ui.appletManager._find_applet('search-box@mtwebster');
 
@@ -45,7 +46,7 @@ MyApplet.prototype = {
             this.searchIcon = new St.Icon({icon_name: "edit-find", icon_size: 24, icon_type: St.IconType.FULLCOLOR});
             this._searchIconClickedId = 0;
             let ar = this.settings.getArray('PROVIDER', DEFAULT_ARRAY);
-            show_provider = this.settings.getBoolean('SHOW_PROVIDER', DEFAULT_SHOW);
+            show_provider = this.settings.getBoolean('Show Provider', DEFAULT_SHOW);
             if (show_provider) {
                 this.set_applet_label(ar[1]);
             } else {
@@ -86,6 +87,11 @@ MyApplet.prototype = {
             this.defaults_menu_item = new Applet.MenuItem(_("Change default programs..."), 'system-run-symbolic',
                     Lang.bind(this, this._defaults));
             this._applet_context_menu.addMenuItem(this.defaults_menu_item);
+            
+            this.provider_switch = new AppletSettingsUI.SwitchSetting(this.settings, 'Show Provider');
+            
+            this._applet_context_menu.addMenuItem(this.provider_switch.getSwitch());
+            
             this.settings.connect('settings-file-changed', Lang.bind(this, this._reload));
         }
         catch (e) {
@@ -99,7 +105,7 @@ MyApplet.prototype = {
 
     _reload: function() {
         this.settings.readSettings();
-        show_provider = this.settings.getBoolean('SHOW_PROVIDER', DEFAULT_SHOW);
+        show_provider = this.settings.getBoolean('Show Provider', DEFAULT_SHOW);
         let ar = this.settings.getArray('PROVIDER', DEFAULT_ARRAY);
         if (show_provider) {
             this.set_applet_label(ar[1]);

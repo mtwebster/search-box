@@ -1,23 +1,39 @@
 const PopupMenu = imports.ui.popupMenu;
+const Lang = imports.lang;
 
 
 
-// settings = appletSettings, key = settings key to use for switch
+// settings = appletSettings
 
-function SettingsUISwitch(settings, key) {
-    this._init.apply(this, arguments);
+function SwitchSetting(settings, key) {
+    this._init(settings, key);
 }
 
-SettingsUISwitch.prototype = {
-        __proto__: PopupSwitchMenuItem.prototype,
-        
-        _init: function (text, active, params) {
+
+SwitchSetting.prototype = {
+        _init: function (settings, key) {
+            this.settings = settings;
+            this.key = key;
+            this._switch = new PopupMenu.PopupSwitchMenuItem(this.key, this.settings.getBoolean(key, false));
+            this._switch.connect('toggled', Lang.bind(this, this._switch_toggled));
             try {
           
             } catch (e) {
                 global.logError(e);
             }
         },
+        
+        getSwitch: function () {
+            return this._switch;
+        },
+        
+        _switch_toggled: function () {
+            global.logError('TOGGLED');
+        },
+        
+        _write_setting: function () {
+            
+        }
         
 
 };
