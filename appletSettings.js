@@ -178,7 +178,12 @@ AppletSettings.prototype = {
          */
         getRawList: function () {
             return this.parsed_settings;
+        },
+
+        setBoolean: function (key, val) {
+
         }
+
 };
 Signals.addSignalMethods(AppletSettings.prototype);
 
