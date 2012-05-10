@@ -17,6 +17,7 @@ const AppletDir = imports.ui.appletManager.applets['search-box@mtwebster'];
 const AppletSettings = AppletDir.appletSettings;
 const AppletSettingsUI = AppletDir.appletSettingsUI;
 
+
 const APPLET_DIR = imports.ui.appletManager._find_applet('search-box@mtwebster');
 
 prov_label = '';
@@ -87,11 +88,12 @@ MyApplet.prototype = {
             this.defaults_menu_item = new Applet.MenuItem(_("Change default programs..."), 'system-run-symbolic',
                     Lang.bind(this, this._defaults));
             this._applet_context_menu.addMenuItem(this.defaults_menu_item);
-            
+
             this.provider_switch = new AppletSettingsUI.SwitchSetting(this.settings, 'Show Provider');
-            
-            this._applet_context_menu.addMenuItem(this.provider_switch.getSwitch());
-            
+            this.settings_menu = new PopupMenu.PopupSubMenuMenuItem(_("Configure"));
+            this._applet_context_menu.addMenuItem(this.settings_menu);
+            this.settings_menu.menu.addMenuItem(this.provider_switch.getSwitch());
+
             this.settings.connect('settings-file-changed', Lang.bind(this, this._reload));
         }
         catch (e) {

@@ -217,7 +217,7 @@ AppletSettings.prototype = {
             }
             this.writeSettings();
         },
-        
+
         _get_index_of_setting: function (key) {
             for (let i = 0; i < this.parsed_settings.length; i++) {
                 let item = this.parsed_settings[i][0];
@@ -226,8 +226,8 @@ AppletSettings.prototype = {
                 }
             }
             return -1;
-        },        
-       
+        },
+
 };
 Signals.addSignalMethods(AppletSettings.prototype);
 
