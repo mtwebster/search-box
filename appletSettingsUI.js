@@ -30,7 +30,7 @@ SwitchSetting.prototype = {
 
         _switch_toggled: function () {
             global.logError('TOGGLED');
-            _write_setting();
+            this._write_setting();
         },
 
         _write_setting: function () {

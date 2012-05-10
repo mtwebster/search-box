@@ -86,10 +86,14 @@ AppletSettings.prototype = {
 
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
-                if (line.substring(0,1) == '#')
+                if (line.substring(0,1) == '#') {
+                    this.parsed_settings.push(['_comment_', line]);
                     continue;
-                if (line.trim(' ') == '')
+                }
+                if (line.trim(' ') == '') {
+                    this.parsed_settings.push(['_blank_', '_blank_']);
                     continue;
+                }
                 let component_line_pretrim = line.split(',');
                 let component_line = new Array();
 
@@ -98,6 +102,28 @@ AppletSettings.prototype = {
                 }
 
                 this.parsed_settings.push(component_line);
+            }
+        },
+
+        writeSettings: function () {
+            try {
+                let writer = this.settings_file.replace(null, false,
+                        Gio.FileCreateFlags.REPLACE_DESTINATION,
+                        null);
+                for (let i = 0; i < this.parsed_settings.length; i++) {
+                    if (this.parsed_settings[i][0] == '_blank_') {
+                        writer.write('\n', null);
+                    } else if (this.parsed_settings[i][0] == '_comment_') {
+                        writer.write(this.parsed_settings[i][1], null);
+                        writer.write('\n', null);
+                    } else {
+                        writer.write(this.parsed_settings[i].toString(), null);
+                        writer.write('\n', null);
+                    }
+                }
+                writer.close(null);
+            } catch (e) {
+                global.logError(e);
             }
         },
 
@@ -181,9 +207,27 @@ AppletSettings.prototype = {
         },
 
         setBoolean: function (key, val) {
-
-        }
-
+            let index = this._get_index_of_setting(key);
+            let valstring = (val) ? 'true' : 'false';
+            if (index != -1) {
+                this.parsed_settings[index][1] = valstring;
+            } else {
+                let newsetting = [key, valstring];
+                this.parsed_settings.push(newsetting);
+            }
+            this.writeSettings();
+        },
+        
+        _get_index_of_setting: function (key) {
+            for (let i = 0; i < this.parsed_settings.length; i++) {
+                let item = this.parsed_settings[i][0];
+                if (item == key) {
+                    return i;
+                }
+            }
+            return -1;
+        },        
+       
 };
 Signals.addSignalMethods(AppletSettings.prototype);
 
