@@ -1,5 +1,8 @@
 const PopupMenu = imports.ui.popupMenu;
 const Lang = imports.lang;
+const St = imports.gi.St;
+const Clutter = imports.gi.Clutter;
+const Gtk = imports.gi.Gtk;
 
 
 
@@ -38,6 +41,12 @@ SwitchSetting.prototype = {
 
         _settings_file_edited_offline: function () {
             this._switch.setToggleState(this.settings.getBoolean(this.key, false));
+        },
+        
+        _onButtonReleaseEvent: function (actor, event) {
+         //   this.activate(event);
+         //   return true;
+            return false;
         }
 };
 
@@ -75,3 +84,38 @@ ComboSetting.prototype = {
             this._switch.setToggleState(this.settings.getBoolean(this.key, false));
         }
 };
+
+
+
+
+function SettingsMenu(text) {
+    this._init(text);
+}
+
+SettingsMenu.prototype = {
+    __proto__: PopupMenu.PopupSubMenuMenuItem.prototype,
+
+    _init: function(text) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
+
+        this.settings_icon = new St.Icon({icon_name: "preferences-system-symbolic",
+                icon_size: 16, icon_type: St.IconType.SYMBOLIC});
+        this.label = new St.Label({ text: text, style_class: 'popup-subtitle-menu-item' });
+
+        this.addActor(this.settings_icon);
+        this.addActor(this.label, { align: St.Align.START });
+        this.menu = new PopupMenu.PopupSubMenu(this.actor, this.settings_icon);
+        this.menu.actor.set_style_class_name('menu-context-menu');
+        this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
+
+    },
+
+    addSetting: function(setting_item) {
+        this.menu.addMenuItem(setting_item);
+    },
+
+    addBreak: function() {
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+    },
+
+}
