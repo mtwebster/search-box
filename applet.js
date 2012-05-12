@@ -91,14 +91,17 @@ MyApplet.prototype = {
 
 
             this.provider_switch = new AppletSettingsUI.SwitchSetting(this.settings, 'Show Provider');
+            this.provider_selection = new AppletSettingsUI.ComboSetting(this.settings, 'Provider');
+
             this.settings_menu = new AppletSettingsUI.SettingsMenu('Settings');
             this._applet_context_menu.addMenuItem(this.settings_menu);
 
             this.settings_menu.addSetting(this.provider_switch.getSwitch());
             this.settings_menu.addBreak();
+            this.settings_menu.addSetting(this.provider_selection.getComboBox());
+            
             this.settings_menu.addSetting(this.defaults_menu_item);
             this.settings_menu.addSetting(this.edit_menu_item);
-
 
             this.settings.connect('settings-file-changed', Lang.bind(this, this._reload));
         }

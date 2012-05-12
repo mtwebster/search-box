@@ -150,10 +150,11 @@ AppletSettings.prototype = {
                 return def;
             }
             let res;
-            for (i=0; i < this.parsed_settings.length; i++)
+            for (i=0; i < this.parsed_settings.length; i++) {
                 if(key == this.parsed_settings[i][0]) {
                     res = this.parsed_settings[i]; 
                 }
+            }
             if (res) {
                 return res;
             } else {
@@ -161,6 +162,26 @@ AppletSettings.prototype = {
             }
         },
 
+        getAllArray: function (key, def) {
+            if (this.parsed_settings.length == 0) {
+                return def;
+            }
+            let res = [];
+            for (i=0; i < this.parsed_settings.length; i++) {
+                if(key == this.parsed_settings[i][0]) {
+                    res.push(this.parsed_settings[i]); 
+                }
+            }
+            if (res) {
+                return res;
+            } else {
+                return def;
+            }
+        },
+        
+        
+        
+        
         /*
          * getString: Returns a string - generally the 2nd entry in a record
          * key: search string (first entry in a record)
@@ -204,6 +225,17 @@ AppletSettings.prototype = {
          */
         getRawList: function () {
             return this.parsed_settings;
+        },
+        
+        getComboSetting: function (key) {
+            let result = [];
+            result.push([key + '_CHOICE', this.getString(key + '_CHOICE', 'null')]);
+            let choices = this.getAllArray(key, ['null','null']);
+            for (let i=0; i < choices.length; i++) {
+                result.push(choices[i]);
+            }
+            global.logError(result.toString());
+            return result;
         },
 
         setBoolean: function (key, val) {

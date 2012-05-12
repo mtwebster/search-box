@@ -56,20 +56,41 @@ function ComboSetting(settings, key) {
 
 ComboSetting.prototype = {
         _init: function (settings, key) {
-            this.settings = settings;
-            this.key = key;
-            this._switch = new PopupMenu.PopupSwitchMenuItem(this.key, this.settings.getBoolean(this.key, false));
-            this._switch.connect('toggled', Lang.bind(this, this._setting_changed));
-            this.settings.connect('settings-file-changed', Lang.bind(this, this._settings_file_edited_offline));
             try {
-
+                this.combo_settings = new Array();
+                this.settings = settings;
+                this.key = key;
+                this.current_choice = 0;
+                this._combobox = new PopupMenu.PopupSubMenuMenuItem(key);
+                this._combobox.connect('active-item-changed', Lang.bind(this, this._setting_changed));
+                this.settings.connect('settings-file-changed', Lang.bind(this, this._settings_file_edited_offline));
+                
+                this._populate_options();
             } catch (e) {
-                global.logError(e);
+                global.logError(e+'kkkkkkk');
             }
         },
 
-        getComboSetting: function () {
-            return this._switch;
+        _populate_options: function () {
+            try {
+            this.combo_settings = this.settings.getComboSetting(this.key);
+            if (!this.combo_settings[0][0] == 'null') {
+                this.current_choice = this.combo_settings[0][1];
+            }
+            this.combo_settings.splice(0,1);
+            for (let i = 0; i < this.combo_settings.length; i++) {
+                let item = new PopupMenu.PopupMenuItem(this.combo_settings[i][1]);
+                this._combobox.menu.addMenuItem(item);
+            } 
+            } catch (e) {
+                global.logError(e+'lllllll');
+                
+                }
+        },
+        
+        
+        getComboBox: function () {
+            return this._combobox;
         },
 
         _setting_changed: function () {
@@ -77,11 +98,11 @@ ComboSetting.prototype = {
         },
 
         _write_setting: function () {
-            this.settings.setBoolean(this.key, this._switch.state);
+            this.settings.setCombo(this.key, this._switch.state);
         },
 
         _settings_file_edited_offline: function () {
-            this._switch.setToggleState(this.settings.getBoolean(this.key, false));
+   //         this._switch.setToggleState(this.settings.getBoolean(this.key, false));
         }
 };
 
