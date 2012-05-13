@@ -178,10 +178,7 @@ AppletSettings.prototype = {
                 return def;
             }
         },
-        
-        
-        
-        
+
         /*
          * getString: Returns a string - generally the 2nd entry in a record
          * key: search string (first entry in a record)
@@ -272,7 +269,6 @@ AppletSettings.prototype = {
         setComboChoice: function (key, index) {
             let i = this._get_index_of_setting(key + '_CHOICE');
             let valstring = index.toString();
-            global.logError(valstring);
             if (i != -1) {
                 this.parsed_settings[i][1] = valstring;
             } else {

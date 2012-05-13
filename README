@@ -1,7 +1,7 @@
 This is a Cinnamon applet, which adds a Web Search box to your Cinnamon bar.
 
 Left-clicking the item will open a search box where you can enter your criteria.
-You can right-click the applet to edit the search provider file, changing the provider, or adding your own (and its label)
+You can right-click the applet to access additional settings - show or hide the provider label, change provider, change default programs
 
 Installation
 ================

@@ -85,7 +85,8 @@ MyApplet.prototype = {
 
             this.defaults_menu_item = new Applet.MenuItem(_("Change default programs..."), 'system-run-symbolic',
                     Lang.bind(this, this._defaults));
-
+            this.edit_menu_item = new Applet.MenuItem(_("Edit providers"), 'accessories-text-editor-symbolic',
+                    Lang.bind(this, this._edit_providers));
 
 
             this.provider_switch = new AppletSettingsUI.SwitchSetting(this.settings, 'Show Provider');
@@ -96,9 +97,12 @@ MyApplet.prototype = {
 
             this.settings_menu.addSetting(this.provider_switch.getSwitch());
             this.settings_menu.addSetting(this.provider_selection.getComboBox());
+            this.settings_menu.addBreak();
+            this.settings_menu.addSetting(this.edit_menu_item);
+            this.settings_menu.addSetting(this.defaults_menu_item);
 
             this._applet_context_menu.addMenuItem(this.settings_menu);
-            this._applet_context_menu.addMenuItem(this.defaults_menu_item);
+
             this.settings.connect('settings-file-changed', Lang.bind(this, this._reload));
         }
         catch (e) {
