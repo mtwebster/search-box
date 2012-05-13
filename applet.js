@@ -23,7 +23,7 @@ const APPLET_DIR = imports.ui.appletManager._find_applet('search-box@mtwebster')
 prov_label = '';
 prov_url = '';
 const DEFAULT_SHOW = true;
-const DEFAULT_ARRAY = ['PROVIDER', 'Google', 'http://google.com/search?q='];
+const DEFAULT_ARRAY = ['Provider', 'Google', 'http://google.com/search?q='];
 const TEXT_EDITOR = 'xdg-open';
 
 function MyApplet(orientation) {
@@ -46,7 +46,7 @@ MyApplet.prototype = {
                                              icon_type: St.IconType.SYMBOLIC });
             this.searchIcon = new St.Icon({icon_name: "edit-find", icon_size: 24, icon_type: St.IconType.FULLCOLOR});
             this._searchIconClickedId = 0;
-            let ar = this.settings.getArray('PROVIDER', DEFAULT_ARRAY);
+            let ar = this.settings.getComboArray('Provider', DEFAULT_ARRAY);
             show_provider = this.settings.getBoolean('Show Provider', DEFAULT_SHOW);
             if (show_provider) {
                 this.set_applet_label(ar[1]);
@@ -82,9 +82,7 @@ MyApplet.prototype = {
             this.searchEntryText.connect('text-changed', Lang.bind(this, this._onSearchTextChanged));
             this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
             this._previousSearchPattern = "";
-            this.edit_menu_item = new Applet.MenuItem(_("Edit providers.conf file"), 'accessories-text-editor-symbolic',
-                    Lang.bind(this, this._edit_providers));
-            
+
             this.defaults_menu_item = new Applet.MenuItem(_("Change default programs..."), 'system-run-symbolic',
                     Lang.bind(this, this._defaults));
 
@@ -94,15 +92,13 @@ MyApplet.prototype = {
             this.provider_selection = new AppletSettingsUI.ComboSetting(this.settings, 'Provider');
 
             this.settings_menu = new AppletSettingsUI.SettingsMenu('Settings');
-            this._applet_context_menu.addMenuItem(this.settings_menu);
+
 
             this.settings_menu.addSetting(this.provider_switch.getSwitch());
-            this.settings_menu.addBreak();
             this.settings_menu.addSetting(this.provider_selection.getComboBox());
-            
-            this.settings_menu.addSetting(this.defaults_menu_item);
-            this.settings_menu.addSetting(this.edit_menu_item);
 
+            this._applet_context_menu.addMenuItem(this.settings_menu);
+            this._applet_context_menu.addMenuItem(this.defaults_menu_item);
             this.settings.connect('settings-file-changed', Lang.bind(this, this._reload));
         }
         catch (e) {
@@ -117,7 +113,7 @@ MyApplet.prototype = {
     _reload: function() {
         this.settings.readSettings();
         show_provider = this.settings.getBoolean('Show Provider', DEFAULT_SHOW);
-        let ar = this.settings.getArray('PROVIDER', DEFAULT_ARRAY);
+        let ar = this.settings.getComboArray('Provider', DEFAULT_ARRAY);
         if (show_provider) {
             this.set_applet_label(ar[1]);
         } else {

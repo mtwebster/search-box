@@ -227,14 +227,13 @@ AppletSettings.prototype = {
             return this.parsed_settings;
         },
         
-        getComboSetting: function (key) {
+        _get_combo_setting_raw: function (key) {
             let result = [];
             result.push([key + '_CHOICE', this.getString(key + '_CHOICE', 'null')]);
             let choices = this.getAllArray(key, ['null','null']);
             for (let i=0; i < choices.length; i++) {
                 result.push(choices[i]);
             }
-            global.logError(result.toString());
             return result;
         },
 
@@ -260,6 +259,28 @@ AppletSettings.prototype = {
             return -1;
         },
 
+        getComboArray: function (key, def) {
+            let raw = this._get_combo_setting_raw(key);
+            if (raw[0][1] == 'null') {
+                return def;
+            }
+            let i = parseInt(raw[0][1]);
+            raw.splice(0,1);
+            return raw[i];
+        },
+
+        setComboChoice: function (key, index) {
+            let i = this._get_index_of_setting(key + '_CHOICE');
+            let valstring = index.toString();
+            global.logError(valstring);
+            if (i != -1) {
+                this.parsed_settings[i][1] = valstring;
+            } else {
+                let newsetting = [key + '_CHOICE', valstring];
+                this.parsed_settings.push(newsetting);
+            }
+            this.writeSettings();
+        }
 };
 Signals.addSignalMethods(AppletSettings.prototype);
 

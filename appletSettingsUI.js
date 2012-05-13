@@ -41,12 +41,6 @@ SwitchSetting.prototype = {
 
         _settings_file_edited_offline: function () {
             this._switch.setToggleState(this.settings.getBoolean(this.key, false));
-        },
-        
-        _onButtonReleaseEvent: function (actor, event) {
-         //   this.activate(event);
-         //   return true;
-            return false;
         }
 };
 
@@ -61,34 +55,33 @@ ComboSetting.prototype = {
                 this.settings = settings;
                 this.key = key;
                 this.current_choice = 0;
-                this._combobox = new PopupMenu.PopupSubMenuMenuItem(key);
+                this._combobox = new PopupMenu.PopupComboBoxMenuItem({});
                 this._combobox.connect('active-item-changed', Lang.bind(this, this._setting_changed));
                 this.settings.connect('settings-file-changed', Lang.bind(this, this._settings_file_edited_offline));
                 
                 this._populate_options();
             } catch (e) {
-                global.logError(e+'kkkkkkk');
+                global.logError(e);
             }
         },
 
         _populate_options: function () {
             try {
-            this.combo_settings = this.settings.getComboSetting(this.key);
-            if (!this.combo_settings[0][0] == 'null') {
-                this.current_choice = this.combo_settings[0][1];
-            }
-            this.combo_settings.splice(0,1);
-            for (let i = 0; i < this.combo_settings.length; i++) {
-                let item = new PopupMenu.PopupMenuItem(this.combo_settings[i][1]);
-                this._combobox.menu.addMenuItem(item);
-            } 
-            } catch (e) {
-                global.logError(e+'lllllll');
-                
+                this.combo_settings = this.settings._get_combo_setting_raw(this.key);
+                if (this.combo_settings[0][1] != 'null') {
+                    this.current_choice = parseInt(this.combo_settings[0][1]);
                 }
+                this.combo_settings.splice(0,1);
+                for (let i = 0; i < this.combo_settings.length; i++) {
+                    let item = new PopupMenu.PopupMenuItem(this.combo_settings[i][1]);
+                    this._combobox.addMenuItem(item, i);
+                } 
+                this._combobox.setActiveItem(this.current_choice);
+            } catch (e) {
+                global.logError(e);
+            }
         },
-        
-        
+
         getComboBox: function () {
             return this._combobox;
         },
@@ -98,16 +91,13 @@ ComboSetting.prototype = {
         },
 
         _write_setting: function () {
-            this.settings.setCombo(this.key, this._switch.state);
+            this.settings.setComboChoice(this.key, this._combobox._activeItemPos);
         },
 
         _settings_file_edited_offline: function () {
-   //         this._switch.setToggleState(this.settings.getBoolean(this.key, false));
+            this._combobox.setActiveItem(parseInt(this.settings.getString(this.key + '_CHOICE', '0')));
         }
 };
-
-
-
 
 function SettingsMenu(text) {
     this._init(text);
